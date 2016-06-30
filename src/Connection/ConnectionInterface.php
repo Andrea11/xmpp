@@ -63,6 +63,13 @@ interface ConnectionInterface extends EventManagerAwareInterface, OptionsAwareIn
     public function disconnect();
     
     /**
+     * Prebind.
+     *
+     * @return void
+     */
+    public function prebind();
+
+    /**
      * Set stream is ready.
      * 
      * @param boolean $flag Flag

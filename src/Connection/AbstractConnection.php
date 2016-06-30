@@ -37,6 +37,7 @@
 namespace Fabiang\Xmpp\Connection;
 
 use Fabiang\Xmpp\Stream\XMLStream;
+use Fabiang\Xmpp\Stream\Client;
 use Fabiang\Xmpp\EventListener\EventListenerInterface;
 use Fabiang\Xmpp\Event\EventManager;
 use Fabiang\Xmpp\Event\EventManagerInterface;
@@ -114,6 +115,13 @@ abstract class AbstractConnection implements ConnectionInterface
      * @var BlockingEventListenerInterface
      */
     private $lastBlockingListener;
+
+    /**
+     * Socket.
+     *
+     * @var SocketClient
+     */
+    protected $socket;
 
     /**
      * {@inheritDoc}
@@ -307,5 +315,34 @@ abstract class AbstractConnection implements ConnectionInterface
         if (time() >= $this->lastResponse + $timeout) {
             throw new TimeoutException('Connection lost after ' . $timeout . ' seconds');
         }
+    }
+
+    /**
+     * Get address from options object.
+     *
+     * @return string
+     */
+    protected function getAddress()
+    {
+        return $this->getOptions()->getAddress();
+    }
+
+    /**
+     * Return socket instance.
+     *
+     * @return SocketClient
+     */
+    public function getSocket()
+    {
+        return $this->socket;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setSocket(Client $socket)
+    {
+        $this->socket = $socket;
+        return $this;
     }
 }

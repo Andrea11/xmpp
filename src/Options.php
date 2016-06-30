@@ -59,7 +59,19 @@ class Options
      *
      * @var string
      */
-    protected $address;
+    protected $hostname;
+
+    /**
+     *
+     * @var string
+     */
+    protected $port;
+
+    /**
+     *
+     * @var string
+     */
+    protected $connectionType;
 
     /**
      * Connection object.
@@ -67,6 +79,13 @@ class Options
      * @var ConnectionInterface
      */
     protected $connection;
+
+    /**
+     * Bosh support.
+     *
+     * @var boolean
+     */
+    protected $bosh = false;
 
     /**
      * PSR-3 Logger interface.
@@ -107,6 +126,12 @@ class Options
 
     /**
      *
+     * @var string
+     */
+    protected $rid;
+
+    /**
+     *
      * @var boolean
      */
     protected $authenticated = false;
@@ -130,6 +155,7 @@ class Options
      * @var array
      */
     protected $authenticationClasses = array(
+        'scram-sha-1' => '\\Fabiang\\Xmpp\\EventListener\\Stream\\Authentication\\ScramSha1',
         'digest-md5' => '\\Fabiang\\Xmpp\\EventListener\\Stream\\Authentication\\DigestMd5',
         'plain'      => '\\Fabiang\\Xmpp\\EventListener\\Stream\\Authentication\\Plain'
     );
@@ -137,13 +163,15 @@ class Options
     /**
      * Constructor.
      *
-     * @param string $address Server address
+     * @param string $hostname Server hostname
+     * @param string $port Server port
+     * @param string $connectionType Server connectionType
      */
-    public function __construct($address = null)
+    public function __construct($hostname, $port, $connectionType)
     {
-        if (null !== $address) {
-            $this->setAddress($address);
-        }
+        $this->hostname = $hostname;
+        $this->port = $port;
+        $this->connectionType = $connectionType;
     }
 
     /**
@@ -179,23 +207,60 @@ class Options
      */
     public function getAddress()
     {
-        return $this->address;
+        $address = $this->connectionType."://".$this->hostname.":".$this->port;
+        return $address;
     }
 
     /**
-     * Set server address.
+     * Get server name.
      *
-     * When a address is passed this setter also calls setTo with the hostname part of the address.
+     * @return string
+     */
+    public function getHostname()
+    {
+        return $this->hostname;
+    }
+
+    /**
+     * Set server name.
      *
-     * @param string $address Server address
+     * When a hostname is passed this setter also calls setTo with the hostname part of the hostname.
+     *
+     * @param string $hostname Server $hostname
      * @return $this
      */
-    public function setAddress($address)
+    public function setHostname($hostname)
     {
-        $this->address = (string) $address;
-        if (false !== ($host = parse_url($address, PHP_URL_HOST))) {
-            $this->setTo($host);
-        }
+        $this->hostname = (string) $hostname;
+        $this->to = (string) $hostname;
+        return $this;
+    }
+
+    /**
+     * Set server port.
+     *
+     * When a port is passed this setter also calls setTo with the hostname part of the port.
+     *
+     * @param string $port Server $port
+     * @return $this
+     */
+    public function setPort($port)
+    {
+        $this->port = (string) $port;
+        return $this;
+    }
+
+    /**
+     * Set server connectionType.
+     *
+     * When a connectionType is passed this setter also calls setTo with the hostname part of the connectionType.
+     *
+     * @param string $connectionType Server $connectionType
+     * @return $this
+     */
+    public function setConnectionType($connectionType)
+    {
+        $this->connectionType = (string) $connectionType;
         return $this;
     }
 
@@ -222,6 +287,28 @@ class Options
     }
 
     /**
+     * Is connection bosh.
+     *
+     * @return boolean
+     */
+    public function isBosh()
+    {
+        return $this->bosh;
+    }
+
+    /**
+     * Set bosh.
+     *
+     * @param boolean $bosh
+     * @return $this
+     */
+    public function setBosh($bosh)
+    {
+        $this->bosh = (bool) $bosh;
+        return $this;
+    }
+
+    /**
      * Get logger instance.
      *
      * @return LoggerInterface
@@ -240,30 +327,6 @@ class Options
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
-        return $this;
-    }
-
-    /**
-     * Get server name.
-     *
-     * @return string
-     */
-    public function getTo()
-    {
-        return $this->to;
-    }
-
-    /**
-     * Set server name.
-     *
-     * This value is send to the server in requests as to="" attribute.
-     *
-     * @param string $to
-     * @return $this
-     */
-    public function setTo($to)
-    {
-        $this->to = (string) $to;
         return $this;
     }
 
@@ -346,7 +409,7 @@ class Options
     }
 
     /**
-     * Get users jid.
+     * Get users sid.
      *
      * @return string
      */
@@ -356,14 +419,36 @@ class Options
     }
 
     /**
-     * Set users jid.
+     * Set users sid.
      *
-     * @param string $jid
+     * @param string $sid
      * @return $this
      */
     public function setSid($sid)
     {
         $this->sid = (string) $sid;
+        return $this;
+    }
+
+    /**
+     * Get users rid.
+     *
+     * @return string
+     */
+    public function getRid()
+    {
+        return $this->rid;
+    }
+
+    /**
+     * Set users rid.
+     *
+     * @param string $rid
+     * @return $this
+     */
+    public function setRid($rid)
+    {
+        $this->rid = (string) $rid;
         return $this;
     }
 

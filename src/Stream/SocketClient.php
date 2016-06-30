@@ -44,24 +44,10 @@ use Fabiang\Xmpp\Util\ErrorHandler;
  *
  * @package Xmpp\Stream
  */
-class SocketClient
+class SocketClient extends Client // implements SocketClientImplementation
 {
 
     const BUFFER_LENGTH = 4096;
-
-    /**
-     * Resource.
-     *
-     * @var resource
-     */
-    protected $resource;
-
-    /**
-     * Address.
-     *
-     * @var string
-     */
-    protected $address;
 
     /**
      * Constructor takes address as argument.
@@ -192,23 +178,4 @@ class SocketClient
         return stream_socket_enable_crypto($this->resource, $enable, $cryptoType);
     }
 
-    /**
-     * Get socket stream.
-     *
-     * @return resource
-     */
-    public function getResource()
-    {
-        return $this->resource;
-    }
-
-    /**
-     * Return address.
-     *
-     * @return string
-     */
-    public function getAddress()
-    {
-        return $this->address;
-    }
 }

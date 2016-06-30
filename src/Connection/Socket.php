@@ -41,6 +41,7 @@ use Fabiang\Xmpp\Stream\SocketClient;
 use Fabiang\Xmpp\Util\XML;
 use Fabiang\Xmpp\Options;
 use Fabiang\Xmpp\Exception\TimeoutException;
+use Fabiang\Xmpp\Stream\Client;
 
 /**
  * Connection to a socket stream.
@@ -56,13 +57,6 @@ class Socket extends AbstractConnection implements SocketConnectionInterface
 <stream:stream to="%s" xmlns:stream="http://etherx.jabber.org/streams" xmlns="jabber:client" version="1.0">
 XML;
     const STREAM_END     = '</stream:stream>';
-
-    /**
-     * Socket.
-     *
-     * @var SocketClient
-     */
-    protected $socket;
 
     /**
      * Did we received any data yet?
@@ -135,9 +129,10 @@ XML;
             if (preg_match('#tcp://(?<address>.+)#', $previousAddress, $matches)) {
                 $this->log('Connecting via TCP failed, now trying to connect via TLS');
 
-                $address = 'tls://' . $matches['address'];
+                var_dump($matches['address']); die();
                 $this->connected = false;
-                $this->getOptions()->setAddress($address);
+                $this->getOptions()->setConnectionType('tls');
+                $this->getOptions()->setHostname($matches['address']);
                 $this->getSocket()->reconnect($address);
                 $this->connect();
                 return;
@@ -179,7 +174,6 @@ XML;
             $this->connected = true;
             $this->log("Connected to '{$address}'", LogLevel::DEBUG);
         }
-
         $this->send(sprintf(static::STREAM_START, XML::quote($this->getOptions()->getTo())));
     }
 
@@ -198,31 +192,31 @@ XML;
     }
 
     /**
-     * Get address from options object.
-     *
-     * @return string
-     */
-    protected function getAddress()
-    {
-        return $this->getOptions()->getAddress();
-    }
-
-    /**
-     * Return socket instance.
-     *
-     * @return SocketClient
-     */
-    public function getSocket()
-    {
-        return $this->socket;
-    }
-
-    /**
      * {@inheritDoc}
      */
-    public function setSocket(SocketClient $socket)
+    public function prebind()
     {
-        $this->socket = $socket;
-        return $this;
+        if (false === $this->connected) {
+            $address = $this->getAddress();
+            $this->getSocket()->connect($this->getOptions()->getTimeout());
+            $this->getSocket()->setBlocking(true);
+
+            $this->connected = true;
+            $this->log("Connected to '{$address}'", LogLevel::DEBUG);
+        }
+
+        $test = "<body content='text/xml; charset=utf-8'
+      from='user@example.com'
+      hold='1'
+      rid='1573741820'
+      to='example.com'
+      route='xmpp:example.com:9999'
+      wait='60'
+      xml:lang='en'
+      xmpp:version='1.0'
+      xmlns='http://jabber.org/protocol/httpbind'
+      xmlns:xmpp='urn:xmpp:xbosh'/>";
+        
+        $this->send(sprintf(static::STREAM_START, XML::quote($this->getOptions()->getTo())));
     }
 }

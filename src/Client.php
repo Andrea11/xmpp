@@ -38,7 +38,6 @@ namespace Fabiang\Xmpp;
 
 use Fabiang\Xmpp\Options;
 use Fabiang\Xmpp\Connection\ConnectionInterface;
-use Fabiang\Xmpp\Connection\Socket;
 use Fabiang\Xmpp\Protocol\ProtocolImplementationInterface;
 use Fabiang\Xmpp\Event\EventManagerAwareInterface;
 use Fabiang\Xmpp\Event\EventManagerInterface;
@@ -84,7 +83,8 @@ class Client implements EventManagerAwareInterface
         if (null !== $options->getConnection()) {
             $connection = $options->getConnection();
         } else {
-            $connection = Socket::factory($options);
+            $class = $options->isBosh() ? "\Fabiang\Xmpp\Connection\WebSocket" : "\Fabiang\Xmpp\Connection\Socket";
+            $connection = $class::factory($options);
             $options->setConnection($connection);
         }
         $this->options    = $options;
